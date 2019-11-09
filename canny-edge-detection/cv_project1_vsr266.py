@@ -121,9 +121,9 @@ def nonMaximaSuppression(gradient, gradient_angle):
     return [nms, histogram, ep]
 
 
-def doubleThresholding(img, thresh):
-    t1=img.max() * 2* thresh
-    t2=t1 * thresh
+def doubleThresholding(img, t):
+    t1=t
+    t2=2*t
     
     M,N =img.shape
     res = np.zeros((M,N), dtype=np.int32)
@@ -141,36 +141,37 @@ def doubleThresholding(img, thresh):
     
     for i in range(1, M-1):
         for j in range(1, N-1):
-            if (img[i,j] == weak):
+            if (res[i,j] == weak):
                 try:
-                    if ((img[i+1, j-1] == strong) or (img[i+1, j] == strong) or (img[i+1, j+1] == strong)
-                        or (img[i, j-1] == strong) or (img[i, j+1] == strong)
-                        or (img[i-1, j-1] == strong) or (img[i-1, j] == strong) or (img[i-1, j+1] == strong)):
-                        img[i, j] = strong
+                    if ((res[i+1, j-1] == strong) or (res[i+1, j] == strong) or (res[i+1, j+1] == strong)
+                        or (res[i, j-1] == strong) or (res[i, j+1] == strong)
+                        or (res[i-1, j-1] == strong) or (res[i-1, j] == strong) or (res[i-1, j+1] == strong)):
+                        res[i, j] = strong
                     else:
-                        img[i, j] = 0
+                        res[i, j] = 0
                 except IndexError as e:
+                    print ("lol\n")
                     pass
-    return img
+    return res
 
     
 if __name__ == "__main__":
     file=sys.argv[1]
     img = cv2.imread("./"+file+".bmp",0)
     con = convolve(img)
-    cv2.imwrite(file+"_gaussian.bmp",con)
+    #cv2.imwrite(file+"_gaussian.bmp",con)
     gradients = sobel(con)
     gradient_x = gradients[0]
     gradient_y = gradients[1]
     gradient = gradients[2]
     gradient_angle = gradients[3]
-    cv2.imwrite(file+"_gradientX.bmp",gradient_x)
-    cv2.imwrite(file+"_gradientY.bmp",gradient_y)
-    cv2.imwrite(file+"_sobel.bmp",gradient)
+    #cv2.imwrite(file+"_gradientX.bmp",gradient_x)
+    #cv2.imwrite(file+"_gradientY.bmp",gradient_y)
+    #cv2.imwrite(file+"_sobel.bmp",gradient)
     suppressed = nonMaximaSuppression(gradient, gradient_angle)
     nms = suppressed[0]
-    cv2.imwrite(file+"_nms.bmp",nms)
+    #cv2.imwrite(file+"_nms.bmp",nms)
     histogram = suppressed[1]
     edge_pixels = suppressed[2]
-    final = doubleThresholding(np.copy(nms),0.045)
-    cv2.imwrite(file+"_doubleT.bmp", final)
+    cv2.imwrite(file+"_doubleT_11.bmp", doubleThresholding(np.copy(nms),11))
+
